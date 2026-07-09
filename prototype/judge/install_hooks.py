@@ -116,6 +116,49 @@ def aide_hooks(root: Path) -> dict:
     }
 
 
+def aide_permissions(root: Path) -> list[str]:
+    """Allow rules so /aide works without permission prompts in auto mode."""
+    j = root / "judge"
+    return [
+        "Read(~/.claude-judge/**)",
+        "Write(~/.claude-judge/feedback/**)",
+        f'Bash(python3 "{j / "doctor.py"}":*)',
+        f"Bash(python3 {j / 'doctor.py'}:*)",
+    ]
+
+
+def merge_permissions(settings: dict, rules: list[str]) -> tuple[dict, int]:
+    out = dict(settings)
+    perms = dict(out.get("permissions") or {})
+    allow = list(perms.get("allow") or [])
+    added = 0
+    for rule in rules:
+        if rule not in allow:
+            allow.append(rule)
+            added += 1
+    perms["allow"] = allow
+    out["permissions"] = perms
+    return out, added
+
+
+def remove_permissions(settings: dict) -> tuple[dict, int]:
+    out = dict(settings)
+    perms = dict(out.get("permissions") or {})
+    allow = list(perms.get("allow") or [])
+    kept = [r for r in allow
+            if ".claude-judge" not in r and "judge/doctor.py" not in r]
+    removed = len(allow) - len(kept)
+    if kept:
+        perms["allow"] = kept
+    else:
+        perms.pop("allow", None)
+    if perms:
+        out["permissions"] = perms
+    else:
+        out.pop("permissions", None)
+    return out, removed
+
+
 def hook_commands(entry: dict) -> list[str]:
     return [
         h.get("command", "")
@@ -214,6 +257,8 @@ def main() -> int:
     backup = None
     if args.uninstall:
         merged, removed = uninstall_hooks(settings)
+        merged, perms_removed = remove_permissions(merged)
+        removed += perms_removed
         if settings_path.exists() and removed:
             stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             backup = settings_path.with_name(f"settings.json.bak-aide-{stamp}")
@@ -228,6 +273,8 @@ def main() -> int:
 
     incoming = aide_hooks(root)
     merged, added = merge_settings(settings, incoming)
+    merged, perms_added = merge_permissions(merged, aide_permissions(root))
+    added += perms_added
 
     if settings_path.exists() and added:
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")

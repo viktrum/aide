@@ -10,19 +10,19 @@ Find the AIDE checkout: read `~/.claude/settings.json`, locate the `UserPromptSu
 
 ## `/aide feedback <text>`
 
-The user is reporting how an AIDE intervention behaved (wrong fire, useful fire, annoying, etc.). Append one JSON line to `~/.claude-judge/feedback.jsonl`:
+The user is reporting how an AIDE intervention behaved (wrong fire, useful fire, annoying, etc.). Use the Write tool to create `~/.claude-judge/feedback/<unix-epoch>.json` (new file, never overwrite an existing one):
 
 ```json
-{"ts": <unix epoch>, "text": "<their words verbatim>", "session_id": "<current session if known>"}
+{"ts": <unix epoch>, "text": "<their words verbatim>", "recent_telemetry": [<last 3 lines of ~/.claude-judge/telemetry.jsonl, as objects>]}
 ```
 
-Use an append (`>>`), never rewrite the file. Then read the last 3 lines of `~/.claude-judge/telemetry.jsonl` and include them in a second JSON line tagged `"context"`. Confirm in one line that it was recorded.
+Confirm in one line that it was recorded.
 
 ## `/aide` or `/aide show`
 
-Read `~/.claude-judge/pending_transform.md` if it exists and is not expired.
+Use the Read tool on `~/.claude-judge/pending_transform.md` if it exists and is not expired.
 
-- If the file contains an `<!-- expires:TIMESTAMP -->` header and TIMESTAMP is in the past, tell the user the optimization expired and delete the file.
+- If the file contains an `<!-- expires:TIMESTAMP -->` header and TIMESTAMP is in the past, tell the user the optimization expired. Do not delete the file — the judge overwrites it on the next transform.
 - If the file is missing, tell the user: "No recent AIDE optimization. AIDE saves one whenever it optimises a flagged prompt (you'll have seen a 'prompt optimised' line)."
 - Otherwise display the saved optimized prompt verbatim in a code block so the user can inspect what the agent was directed to act on. Add nothing beyond one lead-in line.
 

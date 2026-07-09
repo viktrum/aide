@@ -130,11 +130,14 @@ def check_llm_backends():
 
 
 def check_feedback():
-    p = DATA_DIR / "feedback.jsonl"
-    if not p.exists():
+    d = DATA_DIR / "feedback"
+    n = len(list(d.glob("*.json"))) if d.exists() else 0
+    legacy = DATA_DIR / "feedback.jsonl"
+    if legacy.exists():
+        n += len(legacy.read_text(errors="replace").strip().splitlines())
+    if not n:
         return check(OK, "Feedback", "none recorded — /aide feedback <what happened>")
-    n = len(p.read_text(errors="replace").strip().splitlines())
-    return check(OK, "Feedback", f"{n} entries in {p}")
+    return check(OK, "Feedback", f"{n} entries in {d}")
 
 
 def main() -> int:
