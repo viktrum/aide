@@ -2,7 +2,7 @@
 
 AIDE is early. The most valuable contribution right now is evidence:
 
-- **False fires** — an intervention triggered when it shouldn't have. Run `/aide feedback <what happened>` locally, then open an issue with the rule ID from the message (e.g. R21) and what you expected.
+- **False fires** — an intervention triggered when it shouldn't have. Run `/aide feedback <what happened>` locally (it captures the firing rule from telemetry), then open an issue describing the moment and what you expected.
 - **Missed patterns** — an expensive mistake AIDE should have caught. Describe the moment; transcripts stay yours, redact freely.
 - **Portability** — AIDE is tested on macOS/Linux with Python 3.9+. Platform issues are welcome.
 

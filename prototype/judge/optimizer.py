@@ -270,6 +270,6 @@ def transform_context(transform):
 
 
 def transform_notice(transform):
-    """The single user-visible line."""
-    return (f"✦ prompt optimised: {transform['label']} "
-            f"({transform['rule']}). Prefix with * to bypass AIDE.")
+    """The single user-visible line. Rule IDs stay in telemetry, not here."""
+    return (f"✦ prompt optimised: {transform['label']}. "
+            "Prefix with * to bypass AIDE.")

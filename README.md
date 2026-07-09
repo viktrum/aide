@@ -11,7 +11,7 @@ I use Claude Code all day. I kept making the same expensive moves: resubmitting 
 You press Enter like normal. When AIDE catches something, you see one line:
 
 ```
-✦ prompt optimised: raw error dump structured into a bug report (R21). Prefix with * to bypass AIDE.
+✦ prompt optimised: raw error dump structured into a bug report. Prefix with * to bypass AIDE.
 ```
 
 ```

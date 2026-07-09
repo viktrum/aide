@@ -382,34 +382,42 @@ class HooksV2Tests(unittest.TestCase):
         base.update(kwargs)
         return base
 
-    def test_pretool_denies_destructive_under_auto_accept(self):
+    def _gate(self, command, mode="acceptEdits"):
         code, out = run_hook(PRETOOL, self.payload(
-            tool_name="Bash", tool_input={"command": "git reset --hard origin/main"},
-            permission_mode="acceptEdits"), data_dir=self.data_dir)
+            tool_name="Bash", tool_input={"command": command},
+            permission_mode=mode), data_dir=self.data_dir)
         self.assertEqual(code, 0)
-        decision = ((out or {}).get("hookSpecificOutput") or {}).get("permissionDecision")
-        self.assertEqual(decision, "deny")
+        return ((out or {}).get("hookSpecificOutput") or {}).get("permissionDecision")
 
-    def test_pretool_allows_heredoc_that_mentions_destructive_text(self):
-        cmd = ("cat > notes.md <<'EOF'\n"
-               "To clean up run: rm -rf ./build\n"
-               "EOF")
-        code, out = run_hook(PRETOOL, self.payload(
-            tool_name="Bash", tool_input={"command": cmd},
-            permission_mode="acceptEdits"), data_dir=self.data_dir)
-        self.assertEqual(code, 0)
-        self.assertIsNone(out)
+    def test_pretool_asks_on_hard_reset_under_auto_accept(self):
+        self.assertEqual(self._gate("git reset --hard origin/main"), "ask")
+
+    def test_pretool_denies_rm_rf_on_root_or_home(self):
+        self.assertEqual(self._gate("rm -rf /"), "deny")
+        self.assertEqual(self._gate("sudo rm -rf $HOME"), "deny")
+
+    def test_pretool_asks_on_rm_rf_outside_workspace(self):
+        self.assertEqual(self._gate("rm -rf /Users/someone/project"), "ask")
+        self.assertEqual(self._gate('rm -rf "$SCRATCH/clone"'), "ask")
+        self.assertEqual(self._gate("rm -rf ../sibling"), "ask")
+
+    def test_pretool_allows_routine_rm_rf(self):
+        self.assertIsNone(self._gate("rm -rf node_modules dist"))
+        self.assertIsNone(self._gate("rm -rf /tmp/scratch-clone"))
+
+    def test_pretool_allows_destructive_text_as_data(self):
+        heredoc = ("cat > notes.md <<'EOF'\n"
+                   "To clean up run: rm -rf ./build\n"
+                   "EOF")
+        self.assertIsNone(self._gate(heredoc))
+        self.assertIsNone(self._gate('git commit -m "docs: remove rm -rf example"'))
+        self.assertIsNone(self._gate('grep -rn "git reset --hard" docs/'))
 
     def test_pretool_still_denies_heredoc_fed_to_shell(self):
         cmd = ("bash <<'EOF'\n"
-               "rm -rf /tmp/whatever\n"
+               "rm -rf /\n"
                "EOF")
-        code, out = run_hook(PRETOOL, self.payload(
-            tool_name="Bash", tool_input={"command": cmd},
-            permission_mode="acceptEdits"), data_dir=self.data_dir)
-        self.assertEqual(code, 0)
-        decision = ((out or {}).get("hookSpecificOutput") or {}).get("permissionDecision")
-        self.assertEqual(decision, "deny")
+        self.assertEqual(self._gate(cmd), "deny")
 
     def test_all_hooks_exit_silently_under_bypass(self):
         """Optimizer CLI child sessions (AIDE_JUDGE_BYPASS=1) must be no-ops
