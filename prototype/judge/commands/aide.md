@@ -8,6 +8,12 @@ Behavior depends on the argument:
 
 Find the AIDE checkout: read `~/.claude/settings.json`, locate the `UserPromptSubmit` hook command containing `judge/prompt_judge.py`, and take its directory. Run `python3 <that-dir>/doctor.py` and show the user its output verbatim. If no AIDE hook is registered, say so and point to the install instructions in the repo README.
 
+## `/aide scope` or `/aide scope <prompt|full>`
+
+With no argument: read `~/.claude-judge/config.json` (missing file or missing key means `prompt`) and tell the user the current scope in one line: `prompt` = coaching on prompts only; `full` = adds tool gates and stop verification.
+
+With an argument (`prompt` or `full`): read the existing config JSON if present, set its `scope` key to the given value, and Write the merged object back to `~/.claude-judge/config.json`. Confirm in one line. Reject any other value.
+
 ## `/aide feedback <text>`
 
 The user is reporting how an AIDE intervention behaved (wrong fire, useful fire, annoying, etc.). Use the Write tool to create `~/.claude-judge/feedback/<unix-epoch>.json` (new file, never overwrite an existing one):

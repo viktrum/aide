@@ -12,6 +12,20 @@ from pathlib import Path
 
 DATA_DIR = Path(os.environ.get("CLAUDE_JUDGE_HOME", Path.home() / ".claude-judge"))
 STATE_DIR = DATA_DIR / "session_state"
+CONFIG_PATH = DATA_DIR / "config.json"
+
+
+def intervention_scope():
+    """'prompt' (default): coaching on prompts only, blast radius limited to
+    what you typed. 'full': also enables tool gates and stop verification.
+    Env AIDE_SCOPE overrides ~/.claude-judge/config.json."""
+    env = os.environ.get("AIDE_SCOPE")
+    if env:
+        return env.strip().lower()
+    try:
+        return str(json.loads(CONFIG_PATH.read_text()).get("scope", "prompt")).strip().lower()
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return "prompt"
 COMPACT_MEMORY_DIR = DATA_DIR / "compact-memory"
 PRUNE_AGE_SEC = 7 * 24 * 3600
 COMPACT_PRUNE_AGE_SEC = 30 * 24 * 3600

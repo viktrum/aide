@@ -370,6 +370,8 @@ class HooksV2Tests(unittest.TestCase):
         self.root = Path(self._tmp.name)
         self.data_dir = self.root / "judge-data"
         self.data_dir.mkdir()
+        # Most V2 tests exercise the full scope; default-scope tests remove this.
+        (self.data_dir / "config.json").write_text('{"scope": "full"}')
         self.transcript = self.root / "session.jsonl"
         self.addCleanup(self._tmp.cleanup)
 
@@ -388,6 +390,17 @@ class HooksV2Tests(unittest.TestCase):
             permission_mode=mode), data_dir=self.data_dir)
         self.assertEqual(code, 0)
         return ((out or {}).get("hookSpecificOutput") or {}).get("permissionDecision")
+
+    def test_default_scope_is_prompt_only(self):
+        (self.data_dir / "config.json").unlink()
+        # Even the catastrophic case passes through: tool gates are opt-in.
+        self.assertIsNone(self._gate("rm -rf /"))
+
+    def test_prompt_scope_disables_stop_verify(self):
+        (self.data_dir / "config.json").write_text('{"scope": "prompt"}')
+        code, out = run_hook(STOP_VERIFY, self.payload(), data_dir=self.data_dir)
+        self.assertEqual(code, 0)
+        self.assertIsNone(out)
 
     def test_pretool_asks_on_hard_reset_under_auto_accept(self):
         self.assertEqual(self._gate("git reset --hard origin/main"), "ask")

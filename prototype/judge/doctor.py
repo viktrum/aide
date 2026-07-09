@@ -129,6 +129,16 @@ def check_llm_backends():
                  "no API key or claude CLI, transforms stay deterministic (still fine)")
 
 
+def check_scope():
+    from session_state import intervention_scope
+    scope = intervention_scope()
+    if scope == "full":
+        return check(OK, "Scope", "full: prompt coaching + tool gates + stop checks")
+    return check(OK, "Scope",
+                 "prompt-only (default). Tool gates and stop checks are off; "
+                 "enable with /aide scope full")
+
+
 def check_feedback():
     d = DATA_DIR / "feedback"
     n = len(list(d.glob("*.json"))) if d.exists() else 0
@@ -144,6 +154,7 @@ def main() -> int:
     checks = [
         check_python(),
         check_hooks(),
+        check_scope(),
         check_data_dir(),
         check_rulebook(),
         check_activity(),

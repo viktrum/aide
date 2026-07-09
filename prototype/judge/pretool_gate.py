@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from session_state import load  # noqa: E402
+from session_state import intervention_scope, load  # noqa: E402
 from posttool_record import normalize_command, stderr_signature  # noqa: E402
 
 DATA_DIR = Path(os.environ.get("CLAUDE_JUDGE_HOME", Path.home() / ".claude-judge"))
@@ -149,6 +149,8 @@ def log_deny(session_id, tool_name, reason):
 def main():
     if os.environ.get("AIDE_JUDGE_BYPASS"):  # optimizer CLI child — no recursion
         sys.exit(0)
+    if intervention_scope() != "full":
+        sys.exit(0)  # prompt-only scope (default): no tool-call interventions
     try:
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, TypeError):

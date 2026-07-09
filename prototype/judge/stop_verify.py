@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from prompt_judge import (  # noqa: E402
     read_tail_entries, compute_signals, load_json, RULEBOOK_PATH,
 )
-from session_state import load, save  # noqa: E402
+from session_state import intervention_scope, load, save  # noqa: E402
 
 TEST_EVIDENCE_RE = re.compile(
     r"\b(pytest|npm test|npm run test|go test|cargo test|jest|vitest|unittest"
@@ -37,6 +37,8 @@ def session_has_test_evidence(entries):
 def main():
     if os.environ.get("AIDE_JUDGE_BYPASS"):  # optimizer CLI child — no recursion
         sys.exit(0)
+    if intervention_scope() != "full":
+        sys.exit(0)  # prompt-only scope (default): never block a stop
     try:
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, TypeError):

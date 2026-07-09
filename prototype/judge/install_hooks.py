@@ -122,6 +122,7 @@ def aide_permissions(root: Path) -> list[str]:
     return [
         "Read(~/.claude-judge/**)",
         "Write(~/.claude-judge/feedback/**)",
+        "Write(~/.claude-judge/config.json)",
         f'Bash(python3 "{j / "doctor.py"}":*)',
         f"Bash(python3 {j / 'doctor.py'}:*)",
     ]

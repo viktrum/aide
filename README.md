@@ -42,11 +42,11 @@ curl -fsSL https://raw.githubusercontent.com/viktrum/aide/main/install.sh | bash
 
 - **Optimises weak prompts silently.** Blind retries, raw error dumps, mega-prompts, and vague openers get rewritten into structured requests the agent acts on. You see "prompt optimised", nothing else.
 - **Saves tokens.** Nudges you to `/clear` stale sessions, stops runaway web-fetch chains, catches context stuffing.
-- **Stops spirals.** Denies the same failing command the 4th time, blocks destructive bash under auto-accept.
+- **Stops spirals** *(full scope)*. Denies the same failing command the 4th time, catches destructive bash under auto-accept.
 - **Verifies before you ship.** Flags "commit/deploy" when no tests have run all session.
 - **Learns your patterns** *(optional)*. Mines your session history into a personal rulebook, so interventions get more yours over time.
 
-Works out of the box with built-in rules. No LLM calls in the hot path. Every intervention is deterministic and under 150ms.
+By default AIDE only acts on your prompts; tool gates and stop checks are opt-in (`/aide scope full`). Works out of the box with built-in rules. No LLM calls in the hot path. Every intervention is deterministic and under 150ms.
 
 ## Commands
 
@@ -54,6 +54,7 @@ Works out of the box with built-in rules. No LLM calls in the hot path. Every in
 /aide status                 # health check
 /aide feedback <what happened>  # tell AIDE an intervention was wrong (or great)
 /aide show                   # inspect the last prompt optimization
+/aide scope full             # also gate tool calls (default: prompts only)
 *<prompt>                    # bypass AIDE for one prompt
 ```
 
