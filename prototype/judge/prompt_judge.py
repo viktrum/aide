@@ -12,7 +12,7 @@ Channels:
                    optimized rewrite; user sees one "prompt optimised" line
   block         -> prompt erased, reason shown (rulebook patterns only)
 
-Design doc: the AIDE design notes
+Design doc: docs/surfaces/realtime-judge.md
 """
 import hashlib
 import json
@@ -702,7 +702,7 @@ def run_tier1(prompt, sig, marks, thresholds=None, rulebook=None):
             fired.append(fire_record("R2", "B", [
                 ("transform", ""),
                 ("stdout",
-                 "[judge] This prompt matches one that just failed — say what "
+                 "[judge] This prompt matches one that just failed. Say what "
                  "changed, or expect the same failure."),
             ]))
         record_escalation_receipt("R2", marks, rung)
@@ -722,7 +722,7 @@ def run_tier1(prompt, sig, marks, thresholds=None, rulebook=None):
         marks["r4"] = True
         fired.append(fire_record("R4", "B", [(
             "stdout",
-            "[judge] No CLAUDE.md in this repo. Run /init once — every future "
+            "[judge] No CLAUDE.md in this repo. Run /init once; every future "
             "session starts smarter.",
         )]))
 
@@ -755,7 +755,7 @@ def run_tier1(prompt, sig, marks, thresholds=None, rulebook=None):
         if rung in ("stdout", "notice"):
             fired.append(fire_record("R7", "B", [(
                 "stdout",
-                "[judge] No verification yet — run tests before claiming done.",
+                "[judge] No verification yet. Run tests before claiming done.",
             )]))
         else:
             fired.append(fire_record("R7", "B", [("inject", packet)]))
@@ -773,7 +773,7 @@ def run_tier1(prompt, sig, marks, thresholds=None, rulebook=None):
             and sig["turns"] >= 2):
         fired.append(fire_record("R10", "B", [(
             "stdout",
-            f"[judge] You've been idle ~{sig['idle_seconds'] // 60} min — the prompt "
+            f"[judge] You've been idle ~{sig['idle_seconds'] // 60} min. The prompt "
             f"cache has expired, so this turn re-reads ~{sig['context_tokens'] // 1000}k "
             f"tokens at full price. If you're between tasks, /clear first.",
         )]))
@@ -789,7 +789,7 @@ def run_tier1(prompt, sig, marks, thresholds=None, rulebook=None):
         if sig["recent_corrections"]:
             msg += f" and {sig['recent_corrections']} recent correction(s)"
         if sig["prompt_similarity_to_recent"] < 0.2:
-            msg += " — this looks like a NEW task in an old shell"
+            msg += ". This looks like a NEW task in an old shell"
         msg += ". /clear or /compact first unless you need the history."
         fired.append(fire_record("R11", "B", [("stdout", msg)]))
         record_escalation_receipt("R11", marks, "stdout")
@@ -839,7 +839,7 @@ def run_tier1(prompt, sig, marks, thresholds=None, rulebook=None):
         if rung in ("stdout", "notice"):
             fired.append(fire_record("R18", "B", [(
                 "stdout",
-                f"[judge] Previous run fetched {sig['last_run_web_chain']} pages — "
+                f"[judge] Previous run fetched {sig['last_run_web_chain']} pages. "
                 "summarize before fetching more.",
             )]))
         else:
@@ -863,7 +863,7 @@ def run_tier1(prompt, sig, marks, thresholds=None, rulebook=None):
         if rung in ("stdout", "notice"):
             fired.append(fire_record("R19", "B", [(
                 "stdout",
-                "[judge] Many files were read before the first edit — "
+                "[judge] Many files were read before the first edit. "
                 "start from known hotspots, don't rescan.",
             )]))
         else:
@@ -885,7 +885,7 @@ def run_tier1(prompt, sig, marks, thresholds=None, rulebook=None):
         if rung in ("stdout", "notice"):
             fired.append(fire_record("R20", "B", [(
                 "stdout",
-                "[judge] Context is heavy — anchor on the current goal.",
+                "[judge] Context is heavy. Anchor on the current goal.",
             )]))
         else:
             fired.append(fire_record("R20", "B", [("inject", packet)]))
@@ -902,7 +902,7 @@ def run_tier1(prompt, sig, marks, thresholds=None, rulebook=None):
         elif rung in ("stdout", "notice"):
             fired.append(fire_record("R21", "A", [(
                 "stdout",
-                "[judge] Error pasted without repro steps — diagnose before editing.",
+                "[judge] Error pasted without repro steps. Diagnose before editing.",
             )]))
         else:
             fired.append(fire_record("R21", "A", [("inject", packet)]))
@@ -916,7 +916,7 @@ def run_tier1(prompt, sig, marks, thresholds=None, rulebook=None):
         rung = rung_for("R22", marks, rulebook)
         marks["r22"] = True
         first_line = prompt.strip().splitlines()[0][:80]
-        alt = (f"/plan {first_line}... — output: file-level plan, risks, "
+        alt = (f"/plan {first_line}... Output: file-level plan, risks, "
                "out-of-scope, verification commands, stop point before edits.")
         if rung == "inject":
             fired.append(fire_record("R22", "C", [("inject", f"<plan_redirect>{alt}</plan_redirect>")]))
@@ -924,7 +924,7 @@ def run_tier1(prompt, sig, marks, thresholds=None, rulebook=None):
             fired.append(fire_record("R22", "C", [(
                 "stdout",
                 "[judge] Multi-part change and your history shows plan-skipping costs "
-                f"rework. One-click alternative — copy:\n{alt}",
+                f"rework. One-click alternative to copy:\n{alt}",
             )]))
         record_escalation_receipt("R22", marks, rung)
 
@@ -1003,7 +1003,7 @@ def run_rulebook(sig, rulebook, marks, turn, prompt=""):
         fired.append(fire_record("R16", "C", [
             ("inject", hint),
             ("stdout",
-             "[judge/pattern] Recurring correction — consider saving "
+             "[judge/pattern] Recurring correction. Consider saving "
              "this constraint to CLAUDE.md."),
         ]))
         _record_rule_fire("c_correction_cluster", marks, turn)

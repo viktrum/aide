@@ -382,6 +382,35 @@ class HooksV2Tests(unittest.TestCase):
         base.update(kwargs)
         return base
 
+    def test_pretool_denies_destructive_under_auto_accept(self):
+        code, out = run_hook(PRETOOL, self.payload(
+            tool_name="Bash", tool_input={"command": "git reset --hard origin/main"},
+            permission_mode="acceptEdits"), data_dir=self.data_dir)
+        self.assertEqual(code, 0)
+        decision = ((out or {}).get("hookSpecificOutput") or {}).get("permissionDecision")
+        self.assertEqual(decision, "deny")
+
+    def test_pretool_allows_heredoc_that_mentions_destructive_text(self):
+        cmd = ("cat > notes.md <<'EOF'\n"
+               "To clean up run: rm -rf ./build\n"
+               "EOF")
+        code, out = run_hook(PRETOOL, self.payload(
+            tool_name="Bash", tool_input={"command": cmd},
+            permission_mode="acceptEdits"), data_dir=self.data_dir)
+        self.assertEqual(code, 0)
+        self.assertIsNone(out)
+
+    def test_pretool_still_denies_heredoc_fed_to_shell(self):
+        cmd = ("bash <<'EOF'\n"
+               "rm -rf /tmp/whatever\n"
+               "EOF")
+        code, out = run_hook(PRETOOL, self.payload(
+            tool_name="Bash", tool_input={"command": cmd},
+            permission_mode="acceptEdits"), data_dir=self.data_dir)
+        self.assertEqual(code, 0)
+        decision = ((out or {}).get("hookSpecificOutput") or {}).get("permissionDecision")
+        self.assertEqual(decision, "deny")
+
     def test_all_hooks_exit_silently_under_bypass(self):
         """Optimizer CLI child sessions (AIDE_JUDGE_BYPASS=1) must be no-ops
         in every hook — no state writes, no denies, no spawned mines."""

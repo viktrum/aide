@@ -298,7 +298,7 @@ def main() -> int:
     if added:
         print("Done. Restart Claude Code or open a new session.")
     else:
-        print("Already installed — no hook changes needed.")
+        print("Already installed. No hook changes needed.")
     return 0
 
 

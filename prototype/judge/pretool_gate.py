@@ -20,7 +20,20 @@ DESTRUCTIVE_RE = re.compile(
     r"\bdrop\s+(database|table|schema)\b|\bcurl\s+[^|]*\|\s*sh\b|"
     r"\bprod(uction)?\s+(db|database)\b",
     re.I)
-AUTO_MODES = {"auto", "acceptEdits", "bypassPermissions", "dontAsk"}
+AUTO_MODES = {"auto", "acceptedits", "bypasspermissions", "dontask"}
+# Heredoc bodies are stdin DATA, not commands — writing a file that mentions
+# `rm -rf` must not trip the destructive gate. Exception: a heredoc feeding a
+# shell or interpreter IS code and stays scanned.
+HEREDOC_RE = re.compile(r"<<-?\s*(['\"]?)(\w+)\1.*?^\s*\2\s*$", re.S | re.M)
+INTERPRETER_HEREDOC_RE = re.compile(
+    r"\b(?:ba|z|da)?sh\s+(?:-\w+\s+)*<<|\bpython3?\s+(?:-\w+\s+)*<<|\bnode\s+(?:-\w+\s+)*<<")
+
+
+def strip_heredoc_bodies(cmd):
+    """Remove heredoc payloads before destructive-pattern scanning."""
+    if INTERPRETER_HEREDOC_RE.search(cmd):
+        return cmd  # heredoc is executed as code — scan everything
+    return HEREDOC_RE.sub("<<HEREDOC_DATA", cmd)
 PAYLOAD_SMOKE_PATH = DATA_DIR / "payload_smoke.json"
 
 
@@ -117,7 +130,8 @@ def main():
                 deny(reason)
 
         mode = (payload.get("permission_mode") or "").lower()
-        if mode in AUTO_MODES and DESTRUCTIVE_RE.search(cmd):
+        if mode in AUTO_MODES and DESTRUCTIVE_RE.search(
+                strip_heredoc_bodies(tin.get("command", ""))):
             reason = ("Destructive command under auto-accept. Review manually or switch "
                       "permission mode before continuing.")
             log_deny(session_id, name, reason)

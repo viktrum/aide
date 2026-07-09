@@ -90,7 +90,7 @@ def _build_r21(prompt, sig):
     return (
         "<error_report>\n"
         f"  <error>\n{prompt}\n  </error>\n"
-        "  <trigger>unknown — infer from the code or ask one targeted question</trigger>\n"
+        "  <trigger>unknown; infer from the code or ask one targeted question</trigger>\n"
         "  <expected>unknown</expected>\n"
         "  <runtime>unknown</runtime>\n"
         "</error_report>\n"
@@ -122,7 +122,7 @@ def _build_r13(prompt, sig):
         return None
     listing = "\n".join(f"{i}. {q}" for i, q in enumerate(questions, 1))
     return (
-        "Answer every question below as a numbered checklist — do not skip "
+        "Answer every question below as a numbered checklist. Do not skip "
         "any:\n"
         f"{listing}")
 
@@ -211,17 +211,21 @@ def _call_cli(instructions, config):
 
 
 def _llm_polish(prompt, skeleton, config):
+    """auto = API polish only when a key exists (fast); otherwise stay
+    deterministic so the sub-150ms prompt path holds on default installs.
+    cli = explicit opt-in to Haiku via the user's claude CLI; adds seconds
+    on flagged prompts."""
     mode = config["llm"]
     if mode not in ("auto", "api", "cli"):
         return None
     instructions = REWRITE_INSTRUCTIONS.format(prompt=prompt, skeleton=skeleton)
     key = os.environ.get("ANTHROPIC_API_KEY")
-    if mode in ("auto", "api") and key:
+    if mode in ("auto", "api"):
+        if not key:
+            return None
         text = _call_api(instructions, key, config)
-    elif mode in ("auto", "cli"):
+    else:
         text = _call_cli(instructions, config)
-    else:  # api mode without a key
-        return None
     if text and _valid_rewrite(prompt, skeleton, text):
         return text.strip()
     return None
@@ -255,7 +259,7 @@ def optimize(rule_id, prompt, sig, rulebook):
 def transform_context(transform):
     """additionalContext packet directing the agent to act on the rewrite."""
     return (
-        f"[aide] PROMPT OPTIMISED — {transform['label']}.\n"
+        f"[aide] PROMPT OPTIMISED: {transform['label']}.\n"
         "The block below is the canonical version of the user's request this "
         "turn. Act on it as the user's actual request; where it differs from "
         "the raw prompt, the optimized version wins. Do not mention or "
@@ -267,5 +271,5 @@ def transform_context(transform):
 
 def transform_notice(transform):
     """The single user-visible line."""
-    return (f"✦ prompt optimised — {transform['label']} "
+    return (f"✦ prompt optimised: {transform['label']} "
             f"({transform['rule']}). Prefix with * to bypass AIDE.")

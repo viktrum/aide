@@ -38,7 +38,7 @@ The rewrite is also saved to `pending_transform.md` — `/aide` shows it,
 
 | Key | Default | Meaning |
 |-----|---------|---------|
-| `llm` | `auto` | `auto` = API if `ANTHROPIC_API_KEY` set, else Claude CLI; `api` / `cli` force one; `off` = deterministic only |
+| `llm` | `auto` | `auto` = API polish when `ANTHROPIC_API_KEY` is set, else deterministic; `cli` = Haiku via your claude CLI (adds seconds on flagged prompts); `off` = never |
 | `model` | haiku | Model for the lexical polish |
 | `timeout_s` | `6` | Hard LLM budget; on timeout the deterministic skeleton ships |
 

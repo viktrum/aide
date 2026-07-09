@@ -4,18 +4,18 @@ A real-time coach for Claude Code. One command, zero setup.
 
 ## Problem
 
-I use Claude Code all day. I kept making the same expensive moves — resubmitting a prompt that just failed, pasting a stack trace with no context, carrying 100k tokens of dead history into a new task — and nothing ever told me. So I built AIDE. It watches how you work, catches your personal mistake patterns, and intervenes at the exact moment you're about to repeat one.
+I use Claude Code all day. I kept making the same expensive moves: resubmitting a prompt that just failed, pasting a stack trace with no context, carrying 100k tokens of dead history into a new task. Nothing ever told me. So I built AIDE. It watches how you work, catches your personal mistake patterns, and intervenes at the exact moment you're about to repeat one.
 
 ## How it looks
 
 You press Enter like normal. When AIDE catches something, you see one line:
 
 ```
-✦ prompt optimised — raw error dump structured into a bug report (R21). Prefix with * to bypass AIDE.
+✦ prompt optimised: raw error dump structured into a bug report (R21). Prefix with * to bypass AIDE.
 ```
 
 ```
-[judge] Resuming after ~26h idle with ~30k carried tokens — this looks like a
+[judge] Resuming after ~26h idle with ~30k carried tokens. This looks like a
 NEW task in an old shell. /clear or /compact first unless you need the history.
 ```
 
@@ -40,13 +40,13 @@ curl -fsSL https://raw.githubusercontent.com/viktrum/aide/main/install.sh | bash
 
 ## What it does
 
-- **Optimises weak prompts silently** — blind retries, raw error dumps, mega-prompts, and vague openers get rewritten into structured requests the agent acts on. You see "prompt optimised", nothing else.
-- **Saves tokens** — nudges you to `/clear` stale sessions, stops runaway web-fetch chains, catches context stuffing.
-- **Stops spirals** — denies the same failing command the 4th time, blocks destructive bash under auto-accept.
-- **Verifies before you ship** — flags "commit/deploy" when no tests have run all session.
-- **Learns your patterns** *(optional)* — mines your session history into a personal rulebook, so interventions get more yours over time.
+- **Optimises weak prompts silently.** Blind retries, raw error dumps, mega-prompts, and vague openers get rewritten into structured requests the agent acts on. You see "prompt optimised", nothing else.
+- **Saves tokens.** Nudges you to `/clear` stale sessions, stops runaway web-fetch chains, catches context stuffing.
+- **Stops spirals.** Denies the same failing command the 4th time, blocks destructive bash under auto-accept.
+- **Verifies before you ship.** Flags "commit/deploy" when no tests have run all session.
+- **Learns your patterns** *(optional)*. Mines your session history into a personal rulebook, so interventions get more yours over time.
 
-Works out of the box with built-in rules. No LLM calls in the hot path — every intervention is deterministic and under 150ms.
+Works out of the box with built-in rules. No LLM calls in the hot path. Every intervention is deterministic and under 150ms.
 
 ## Commands
 
@@ -59,7 +59,7 @@ Works out of the box with built-in rules. No LLM calls in the hot path — every
 
 ## Personalize (optional)
 
-Mine your own history into a rulebook — patterns generic rules can't know:
+Mine your own history into a rulebook of patterns generic rules can't know:
 
 ```
 cd ~/.aide/prototype
@@ -77,7 +77,7 @@ npx agentaide --uninstall
 
 ## Privacy
 
-Everything stays local. AIDE reads `~/.claude/` session files on your machine, writes its state to `~/.claude-judge/`, and sends nothing anywhere. The optional mining step uses your own LLM CLI (`claude`, `agy`, or `codex`) — your keys, your quota, your machine.
+Everything stays local. AIDE reads `~/.claude/` session files on your machine, writes its state to `~/.claude-judge/`, and sends nothing anywhere. The optional mining step uses your own LLM CLI (`claude`, `agy`, or `codex`). Your keys, your quota, your machine.
 
 ## Docs
 

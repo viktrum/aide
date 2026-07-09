@@ -109,6 +109,17 @@ class RewriteValidationTests(unittest.TestCase):
         self.assertEqual(result["method"], "haiku")
         self.assertIn("dashboard", result["text"])
 
+    def test_auto_without_api_key_stays_deterministic(self):
+        env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
+        env["AIDE_OPTIMIZER_LLM"] = "auto"
+        with unittest.mock.patch.dict(os.environ, env, clear=True):
+            with unittest.mock.patch.object(optimizer, "_call_api") as api, \
+                    unittest.mock.patch.object(optimizer, "_call_cli") as cli:
+                result = optimizer.optimize("R5", "improve the dashboard", {}, {})
+        api.assert_not_called()
+        cli.assert_not_called()
+        self.assertEqual(result["method"], "deterministic")
+
     def test_structural_rule_never_calls_llm(self):
         with unittest.mock.patch.dict(os.environ, {"AIDE_OPTIMIZER_LLM": "cli"}):
             with unittest.mock.patch.object(optimizer, "_call_cli") as cli:
