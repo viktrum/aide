@@ -27,10 +27,16 @@ context into CLAUDE.md so the agent stops probing.
 ## Install
 
 ```
-curl -fsSL https://raw.githubusercontent.com/viktrum/aide/main/install.sh | bash
+npx agentaide
 ```
 
 That's it. Your next Claude Code session is coached.
+
+No Node? Same thing via curl:
+
+```
+curl -fsSL https://raw.githubusercontent.com/viktrum/aide/main/install.sh | bash
+```
 
 ## What it does
 
@@ -66,7 +72,7 @@ Re-mining runs automatically in the background after that (every 24h, incrementa
 ## Uninstall
 
 ```
-curl -fsSL https://raw.githubusercontent.com/viktrum/aide/main/install.sh | bash -s -- --uninstall
+npx agentaide --uninstall
 ```
 
 ## Privacy

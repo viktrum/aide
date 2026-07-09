@@ -1,0 +1,12 @@
+{
+  "name": "agentaide",
+  "version": "0.1.0",
+  "description": "A real-time coach for Claude Code. One command, zero setup.",
+  "bin": { "agentaide": "bin/cli.js" },
+  "files": ["bin", "prototype", "prompts", "docs", "install.sh"],
+  "engines": { "node": ">=18" },
+  "repository": { "type": "git", "url": "git+https://github.com/viktrum/aide.git" },
+  "homepage": "https://github.com/viktrum/aide#readme",
+  "keywords": ["claude-code", "claude", "ai", "coding-agent", "developer-tools", "hooks"],
+  "license": "MIT"
+}
